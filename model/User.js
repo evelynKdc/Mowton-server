@@ -17,6 +17,9 @@ const userSchema = Schema({
   img: {
     type: String,
   },
+  cover: {
+    type: String,
+  },
   estatus: {
     type: Boolean,
     default: true,
@@ -25,14 +28,24 @@ const userSchema = Schema({
     type: Boolean,
     default: false,
   },
+  description: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: new Date(),
+  },
+  friends: {
+    type: Array,
+    default: [],
+  },
 });
 
 userSchema.methods.toJSON = function () {
-  const { __v, password,_id, ...user } = this.toObject();
+  const { __v, password, _id, ...user } = this.toObject();
   user.uid = _id;
   return user;
 };
-
-
 
 module.exports = model("User", userSchema);
