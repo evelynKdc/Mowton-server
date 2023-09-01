@@ -4,6 +4,17 @@ const userSchema = Schema({
   name: {
     type: String,
     required: [true, "El nombre es requerido"],
+    min:2
+  },
+  lastName: {
+    type: String,
+    required: [true, "El apellido es requerido"],
+    min: 4,
+  },
+  username: {
+    type: String,
+    min:4,
+    max:10
   },
   email: {
     type: String,
@@ -30,13 +41,20 @@ const userSchema = Schema({
   },
   description: {
     type: String,
-    required: true,
   },
+  occupation: String,
+  twitter: String,
+  linkedin: String,
+  github: String,
   createdAt: {
     type: Date,
     default: new Date(),
   },
   friends: {
+    type: Array,
+    default: [],
+  },
+  followers: {
     type: Array,
     default: [],
   },
