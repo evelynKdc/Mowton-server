@@ -8,7 +8,6 @@ const postSchema = Schema({
   },
   description: {
     type: String,
-    required: true,
   },
   likes: {
     type: Array,
@@ -30,9 +29,7 @@ const postSchema = Schema({
     required: true,
   },
   img: {
-    type: Array,
-    default: [],
-    required: true,
+    type: String,
   },
   status: {
     type: Boolean,

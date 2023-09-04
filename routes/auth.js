@@ -6,10 +6,10 @@ const { duplicatedEmailValidator } = require("../helpers/dbValidators");
 const router = Router();
 
 router.post("/register", [
-    check("name", "Is not valid").isLength({min: 2}),
-    check("lastName", "Is not valid").isLength({min: 2}),
-    check("password", "Is not valid").isLength({min: 6}),
-    check("email", "Is not a valid email").isEmail(),
+    check("name", "El nombre es requerido").isLength({min: 2}),
+    check("lastName", "El apellido es requerido").isLength({min: 2}),
+    check("password", "La contraseña minimo debe contener 6 caracteres").isLength({min: 6}),
+    check("email", "El email debe ser valido").isEmail(),
     check("email").custom(duplicatedEmailValidator),
     fieldValidator
 ] ,registerAuth);
