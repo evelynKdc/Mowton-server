@@ -5,9 +5,16 @@ const commentModel = Schema({
     ref: "User",
     required: true,
   },
+  post: {
+    type: Schema.Types.ObjectId,
+    ref: "Post",
+    required: true,
+  },
   description: {
     type: String,
-    required: true,
+  },
+  img:{
+    type: String,
   },
   status: {
     type: Boolean,

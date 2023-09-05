@@ -5,6 +5,7 @@ const { connexion } = require("../db/config");
 const userRouter = require("../routes/users");
 const authRouter = require("../routes/auth");
 const postRouter = require("../routes/posts");
+const commentRouter = require("../routes/comments");
 class Server {
   constructor() {
     this.app = express();
@@ -14,6 +15,8 @@ class Server {
       users: "/api/users",
       auth: "/api/auth",
       post: "/api/posts",
+      comments: "/api/comments",
+
     };
     this.connectDb();
     this.middlewares();
@@ -44,6 +47,7 @@ class Server {
     this.app.use(this.path.users, userRouter);
     this.app.use(this.path.auth, authRouter);
     this.app.use(this.path.post, postRouter);
+    this.app.use(this.path.comments, commentRouter);
   }
 
   listen() {
