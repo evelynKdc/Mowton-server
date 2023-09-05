@@ -9,9 +9,10 @@ const {
   getAllPosts,
   likedPost,
   sharedPost,
+  getPostByUserId,
 } = require("../controller/postC");
 const { check } = require("express-validator");
-const { isPostIdExist, isPostIdActive } = require("../helpers/dbValidators");
+const { isPostIdExist, isPostIdActive, isUserIdExist, isUserIdActive } = require("../helpers/dbValidators");
 const router = Router();
 
 router.get("/", [validateJWT, fieldValidator], getAllPosts);
@@ -25,7 +26,15 @@ router.get(
     fieldValidator,
   ],
   getPostByid
-);
+); 
+
+router.get("/user/:id", [
+  validateJWT,
+  check("id", "no es un id valido").isMongoId(),
+  check("id").custom(isUserIdExist),
+  check("id").custom(isUserIdActive),
+  fieldValidator
+] ,getPostByUserId)
 
 router.post("/", [validateJWT, fieldValidator], createPost);
 

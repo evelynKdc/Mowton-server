@@ -224,6 +224,31 @@ const sharedPost = async (req, res) => {
       .json({ ok: false, error: "Error al compartir el post", error });
   }
 };
+
+
+const getPostByUserId = async (req,res)=>{
+  const {id} = req.params;
+
+  try {
+
+    const posts = await Post.find({user:id, status:true}).populate("user");
+
+    if (!posts) {
+      return res.json({
+        mssg: "Este usuario no ha publicado aun"
+      })
+    }
+
+    res.json({
+      posts
+    })
+    
+  } catch (error) {
+    res
+      .status(500)
+      .json({ ok: false, error: "Error al cargar los posts", error });
+  }
+}
 module.exports = {
   createPost,
   updatePost,
@@ -232,4 +257,5 @@ module.exports = {
   getAllPosts,
   likedPost,
   sharedPost,
+  getPostByUserId
 };
