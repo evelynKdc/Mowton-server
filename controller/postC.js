@@ -52,7 +52,6 @@ const createPost = async (req, res) => {
 const updatePost = async (req, res) => {
   const { description, image } = req.body;
   const { id } = req.params;
-  console.log(id, description);
 
   if (!req.user._id) {
     return res.status(500).json({
@@ -68,10 +67,9 @@ const updatePost = async (req, res) => {
     });
   }
 
-
   try {
     const post = await Post.findById(id);
-    // Verifica si el usuario actual (req.user) es el creador del post
+    // // Verifica si el usuario actual (req.user) es el creador del post
     if (req.user._id.toString() !== post.user.toString()) {
       return res.status(403).json({
         ok: false,
@@ -96,10 +94,12 @@ const updatePost = async (req, res) => {
       const result = await cloudinary.uploader.upload(image);
       post.img = result.secure_url;
     } else {
-      const fullNameArr = post.img.split("/");
-      const name = fullNameArr[fullNameArr.length - 1];
-      const [imgId] = name.split(".");
-      await cloudinary.uploader.destroy(imgId);
+      if (post.img) {
+        const fullNameArr = post.img.split("/");
+        const name = fullNameArr[fullNameArr.length - 1];
+        const [imgId] = name.split(".");
+        await cloudinary.uploader.destroy(imgId);
+      }
       post.img = undefined;
     }
 
@@ -117,7 +117,6 @@ const updatePost = async (req, res) => {
 };
 
 const deletePost = async (req, res) => {
-
   const { id } = req.params;
   if (!req.user._id) {
     return res.status(500).json({
@@ -127,21 +126,20 @@ const deletePost = async (req, res) => {
   }
   try {
     const post = await Post.findById(id);
-    // Verifica si el usuario actual (req.user) es el creador del post
+    // // Verifica si el usuario actual (req.user) es el creador del post
     if (req.user._id.toString() !== post.user.toString()) {
       return res.status(403).json({
         ok: false,
         mssg: "No tiene permisos para eliminar este post",
       });
     }
-    const postUpdated = await Post.findByIdAndUpdate(id, { status: false }); //TODO verificar
-    await postUpdated.save();
+    const postUpdated = await Post.findByIdAndUpdate(id, { status: false }, {new: true}); 
     res.json({
       ok: true,
-      postUpdated
+      postUpdated,
     });
   } catch (error) {
-    res.status(500).json({ ok: false, error });
+    res.status(500).json({ error });
   }
 };
 
@@ -161,26 +159,77 @@ const getPostByid = async (req, res) => {
   }
 };
 
+const getAllPosts = async (req = request, res) => {
+  const { limit = 10, from = 0 } = req.query;
 
-const getAllPosts = async (req=request,res) =>{
-  const {limit = 10, from = 0} = req.query;
-
-  const query = {status: true};
+  const query = { status: true };
 
   try {
-
-    const posts = await Post.find(query).populate("user").skip(Number(from)).limit(Number(limit))
-    res.json({ok:true, posts})
+    const posts = await Post.find(query)
+      .populate("user")
+      .skip(Number(from))
+      .limit(Number(limit));
+    res.json({ ok: true, posts });
   } catch (error) {
     res
       .status(500)
       .json({ ok: false, error: "Error al obtener los posts", error });
   }
-}
+};
+
+const likedPost = async (req, res) => {
+  //TODO verify!!!
+  const { id } = req.params;
+  const user = req.user._id;
+
+  try {
+    const post = await Post.findById(id);
+
+    if (post.likes.includes(user)) {
+      post.likes = post.likes.filter((userID) => userID === user);
+    } else {
+      post.likes.push(user);
+    }
+
+    await post.save();
+
+    res.json({ ok: true, post });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ ok: false, error: "Error al dar reaccionar al post", error });
+  }
+};
+
+const sharedPost = async (req, res) => {
+  //TODO verify!!!!!
+  const { id } = req.params;
+  const user = req.user._id;
+
+  try {
+    const post = await Post.findById(id);
+
+    if (post.shares.includes(user)) {
+      post.shares = post.shares.filter((userID) => userID === user);
+    } else {
+      post.shares.push(user);
+    }
+
+    await post.save();
+
+    res.json({ ok: true, post });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ ok: false, error: "Error al compartir el post", error });
+  }
+};
 module.exports = {
   createPost,
   updatePost,
   deletePost,
   getPostByid,
-  getAllPosts
+  getAllPosts,
+  likedPost,
+  sharedPost,
 };

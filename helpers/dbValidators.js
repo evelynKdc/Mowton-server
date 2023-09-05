@@ -23,6 +23,20 @@ const duplicatedEmailValidator = async (email = "") => {
     }
   };
 
+  //verifying if post id exists
+  const isPostIdExist = async (id = "") => {
+    const post = await Post.findById(id);
+    if (!post) {
+      throw new Error("Post does not exist");
+    }
+  };
+  //verifying if user id is active
+  const isPostIdActive = async (id = "") => {
+    const post = await Post.findById(id);
+    if (!post.status) {
+      throw new Error("Post is not active");
+    }
+  };
 
 
 
@@ -30,4 +44,6 @@ const duplicatedEmailValidator = async (email = "") => {
     duplicatedEmailValidator,
     isUserIdExist,
     isUserIdActive,
+    isPostIdExist,
+    isPostIdActive
   }
