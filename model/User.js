@@ -43,6 +43,7 @@ const userSchema = Schema({
     type: String,
   },
   occupation: String,
+  location: String,
   twitter: String,
   linkedin: String,
   github: String,
