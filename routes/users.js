@@ -12,6 +12,7 @@ const {
   updateFollow,
   updateFriend,
   getUserById,
+  searchUser,
 } = require("../controller/usersC");
 const { fieldValidator } = require("../middleware/validator");
 const {
@@ -112,4 +113,7 @@ router.put(
   ],
   updateFriend
 );
+
+
+router.get("/search/:object", searchUser);
 module.exports = router;

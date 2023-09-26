@@ -319,6 +319,16 @@ const updateFriend = async(req,res)=>{
 }
 
 
+const searchUser  = async (req, res) => {
+  const {object} = req.params;
+
+  const regex = new RegExp(object, "i");
+  const user = await User.find({ name: regex, estatus: true });
+
+  res.json({ results: user });
+};
+
+
 module.exports = {
   getUsers,
   userDelete,
@@ -328,5 +338,6 @@ module.exports = {
   updatePassword,
   updateFollow,
   updateFriend,
-  getUserById
+  getUserById,
+  searchUser
 };
