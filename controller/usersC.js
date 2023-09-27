@@ -262,14 +262,14 @@ const updateFollow = async (req, res) => {
     const userFollowing = await User.findById(req.user._id);
     if (user.followers.includes(userFollowing)) {
       user.followers = user.followers.filter(
-        (userID) => userID === userFollowing
+        (userID) => userID === userFollowing._id
       );
-      userFollowing.followers = userFollowing.followers.filter(
-        (userID) => userID === user
+      userFollowing.following = userFollowing.following.filter(
+        (userID) => userID === user._id
       );
     } else {
-      user.followers.push(userFollowing);
-      userFollowing.followers.push(user);
+      user.followers.push(userFollowing._id);
+      userFollowing.following.push(user._id);
     }
 
     await user.save();

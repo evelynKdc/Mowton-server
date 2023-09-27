@@ -67,6 +67,10 @@ const userSchema = Schema({
     type: Array,
     default: [],
   },
+  following: {
+    type: Array,
+    default: [],
+  },
 });
 
 userSchema.methods.toJSON = function () {
