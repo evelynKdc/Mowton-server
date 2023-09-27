@@ -12,7 +12,7 @@ cloudinary.config({
   secure: true,
 });
 
-const getUsers = async(req = request, res = response) => {
+const getUsers = async (req = request, res = response) => {
   const { limit = 10, from = 0 } = req.query;
 
   const query = { status: true };
@@ -29,24 +29,20 @@ const getUsers = async(req = request, res = response) => {
   }
 };
 
-
-const getUserById = async(req,res)=>{
-  const { id }= req.params;
+const getUserById = async (req, res) => {
+  const { id } = req.params;
   try {
-
     const user = await User.findById(id);
     res.json({
       ok: true,
       user,
     });
-    
   } catch (error) {
     res
-    .status(500)
-    .json({ ok: false, error: "Error al obtener el usuario", error });
+      .status(500)
+      .json({ ok: false, error: "Error al obtener el usuario", error });
   }
-}
-
+};
 
 const updatePassword = async (req = request, res) => {
   const { id } = req.params;
@@ -66,8 +62,6 @@ const updatePassword = async (req = request, res) => {
     console.log(error);
     res.status(500).json({ error });
   }
-
-
 };
 
 const userDelete = async (req, res) => {
@@ -254,7 +248,7 @@ const updateAboutUser = async (req, res) => {
   }
 };
 
-const updateFollow = async(req,res)=>{
+const updateFollow = async (req, res) => {
   const { id } = req.params;
   if (!req.user._id) {
     return res.status(500).json({
@@ -263,13 +257,16 @@ const updateFollow = async(req,res)=>{
     });
   }
 
-  
   try {
     const user = await User.findById(id);
     const userFollowing = await User.findById(req.user._id);
     if (user.followers.includes(userFollowing)) {
-      user.followers = user.followers.filter((userID) => userID === userFollowing);
-      userFollowing.followers = userFollowing.followers.filter((userID) => userID === user);
+      user.followers = user.followers.filter(
+        (userID) => userID === userFollowing
+      );
+      userFollowing.followers = userFollowing.followers.filter(
+        (userID) => userID === user
+      );
     } else {
       user.followers.push(userFollowing);
       userFollowing.followers.push(user);
@@ -284,9 +281,8 @@ const updateFollow = async(req,res)=>{
       .status(500)
       .json({ ok: false, error: "Error al seguir al usuario", error });
   }
-}
-
-const updateFriend = async(req,res)=>{
+};
+const addToPendingFriend = async (req, res) => {
   const { id } = req.params;
   if (!req.user._id) {
     return res.status(500).json({
@@ -295,17 +291,30 @@ const updateFriend = async(req,res)=>{
     });
   }
 
-  
   try {
     const user = await User.findById(id);
     const userReqFriend = await User.findById(req.user._id);
-    if (user.friends.includes(userReqFriend)) {
-      user.friends = user.friends.filter((userID) => userID === userReqFriend);
-      userReqFriend.friends = userReqFriend.friends.filter((userID) => userID === user);
-    } else {
-      user.friends.push(userReqFriend);
-      userReqFriend.friends.push(user);
+
+    if (
+      userReqFriend.friends.includes(user._id) ||
+      user.friends.includes(userReqFriend._id)
+    ) {
+      return res.status(400).json({
+        ok: false,
+        mssg: "Ya son amigos actualmente",
+      });
     }
+    if (
+      userReqFriend.pendingFriend.includes(user._id) ||
+      user.pendingAccept.includes(userReqFriend._id)
+    ) {
+      return res.status(400).json({
+        ok: false,
+        mssg: "Ya hay una solicitud pendiente",
+      });
+    }
+    user.pendingAccept.push(userReqFriend._id);
+    userReqFriend.pendingFriend.push(user._id);
 
     await user.save();
     await userReqFriend.save();
@@ -316,18 +325,66 @@ const updateFriend = async(req,res)=>{
       .status(500)
       .json({ ok: false, error: "Error al volverse amigo del usuario", error });
   }
-}
+};
 
+const confirmFriend = async (req, res) => {
+  const { id } = req.params;
+  const { confirm } = req.body;
+  if (!req.user._id) {
+    return res.status(500).json({
+      ok: false,
+      mssg: "internal error, jwt is not validated because it is not available the id",
+    });
+  }
 
-const searchUser  = async (req, res) => {
-  const {object} = req.params;
+  try {
+    const user = await User.findById(id);
+    const userReqFriend = await User.findById(req.user._id);
+
+    if (
+      userReqFriend.friends.includes(user._id) ||
+      user.friends.includes(userReqFriend._id)
+    ) {
+      return res.status(400).json({
+        ok: false,
+        mssg: "Ya son amigos actualmente",
+      });
+    }
+
+    if (!user.pendingFriend.includes(userReqFriend._id)) {
+      return res.status(400).json({
+        ok: false,
+        mssg: "No esta en la lista de amistad pendiente",
+      });
+    }
+
+    if (confirm) {
+      user.friends.push(userReqFriend._id);
+      userReqFriend.friends.push(user._id);
+    } 
+
+    userReqFriend.pendingAccept = userReqFriend.pendingAccept.filter((userID) => userID === user._id);
+    user.pendingFriend = user.pendingFriend.filter((userID) => userID === userReqFriend._id);
+
+    await user.save();
+    await userReqFriend.save();
+
+    res.json({ ok: true, user, userReqFriend });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ ok: false, error: "Error al volverse amigo del usuario", error });
+  }
+};
+
+const searchUser = async (req, res) => {
+  const { object } = req.params;
 
   const regex = new RegExp(object, "i");
   const user = await User.find({ name: regex, estatus: true });
 
   res.json({ results: user });
 };
-
 
 module.exports = {
   getUsers,
@@ -337,7 +394,8 @@ module.exports = {
   updateAboutUser,
   updatePassword,
   updateFollow,
-  updateFriend,
+  addToPendingFriend,
+  confirmFriend,
   getUserById,
-  searchUser
+  searchUser,
 };

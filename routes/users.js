@@ -3,20 +3,19 @@ const { check } = require("express-validator");
 
 const {
   getUsers,
-  createUsers,
   userDelete,
   updateProfileImg,
   updateCoverImg,
   updateAboutUser,
   updatePassword,
   updateFollow,
-  updateFriend,
   getUserById,
   searchUser,
+  addToPendingFriend,
+  confirmFriend,
 } = require("../controller/usersC");
 const { fieldValidator } = require("../middleware/validator");
 const {
-  duplicatedEmailValidator,
   isUserIdExist,
   isUserIdActive,
 } = require("../helpers/dbValidators");
@@ -111,7 +110,20 @@ router.put(
     check("id").custom(isUserIdActive),
     fieldValidator,
   ],
-  updateFriend
+  addToPendingFriend
+);
+
+router.put(
+  "/confirmFriend/:id",
+  [
+    validateJWT,
+    check("id", "is no a mongo db valid").isMongoId(),
+    check("id").custom(isUserIdExist),
+    check("id").custom(isUserIdActive),
+    check("confirm", "la cofirmacion o rechazo es requerido").isBoolean(),
+    fieldValidator,
+  ],
+  confirmFriend
 );
 
 

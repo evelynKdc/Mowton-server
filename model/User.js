@@ -55,6 +55,14 @@ const userSchema = Schema({
     type: Array,
     default: [],
   },
+  pendingAccept: {
+    type: Array,
+    default: [],
+  },
+  pendingFriend:{
+    type: Array,
+    default: [],
+  },
   followers: {
     type: Array,
     default: [],
